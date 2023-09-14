@@ -12,20 +12,27 @@ function App() {
   const [showForm, setShowform] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    endpoint: "",
-    headers: "",
+    schema: "",
   });
 
   useEffect(() => {
     const p = localStorage.getItem(lsproject);
     if (p) {
       setProject(JSON.parse(p));
+      const hh = setTimeout(() => {
+        document.getElementsByClassName('iRmVrA')?.[0]?.click();
+        return clearTimeout(hh);
+      }, 100)
     }
   }, []);
 
   const handleSetProject = (project) => {
     localStorage.setItem(lsproject, JSON.stringify(project));
     setProject(project);
+    const hh = setTimeout(() => {
+      document.getElementsByClassName('iRmVrA')?.[0]?.click();
+      return clearTimeout(hh);
+    }, 100)
   };
 
   const handleSubmit = (evt) => {
@@ -35,8 +42,7 @@ function App() {
     localStorage.setItem(lsprojects, JSON.stringify([...projects, formData]));
     setFormData(() => ({
       name: "",
-      endpoint: "",
-      headers: "",
+      schema: "",
     }));
     setProjets([...projects, formData]);
     setShowform(() => false);
@@ -66,13 +72,23 @@ function App() {
           setProject(undefined);
         }}
       >
-        {project.name || 'Projekt liste'}
+        {project.name || "Projekt liste"}
       </div>
       <Provider store={store}>
         <Playground
+          endpoint={null}
           activeProjectName={project.name}
-          endpoint={project.endpoint}
-          headers={getHeader(project.headers)}
+          activeEnv={project.name}
+          schema={getHeader(project.endpoint).data}
+          settings={{
+            "tracing.hideTracingResponse": false,
+            'tracing.tracingSupported': false,
+            'schema.polling.enable': false
+          }}
+          injectedState={{
+            activeEnv: project.name
+          }}
+          isElectron={true}
         />
       </Provider>
     </>
@@ -92,8 +108,8 @@ function App() {
               }}
               value={formData.name}
             />
-            <label>Endpoint</label>
-            <input
+            <label>Schema</label>
+            <textarea
               onChange={(evt) => {
                 const { value } = evt.target;
                 setFormData((s) => ({
@@ -102,17 +118,6 @@ function App() {
                 }));
               }}
               value={formData.endpoint}
-            />
-            <label>Headers</label>
-            <input
-              onChange={(evt) => {
-                const { value } = evt.target;
-                setFormData((s) => ({
-                  ...s,
-                  headers: value,
-                }));
-              }}
-              value={formData.headers}
             />
             <button
               type="button"

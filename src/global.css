@@ -34,7 +34,7 @@ body {
   justify-content: center;
 }
 .wrapper {
-  max-width: 250px;
+  max-width: 350px;
   border: #172b3a 1px solid;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   background-color: #172b3a;
@@ -95,12 +95,39 @@ form {
   padding: 20px 10px;
 }
 input,
-label {
+label, textarea {
   width: 100%;
+}
+input, textarea {
+  padding: 10px;
 }
 form label {
   margin-bottom: 10px;
 }
-form input {
+form textarea { 
+  height: 300px;
+}
+form input, form textarea {
   margin-bottom: 30px;
+}
+.cEPVvT {
+  display: none;
+}
+.jgPmys {
+  width: 100vw !important;
+}
+.dROqMf {
+  height: 100px !important;
+}
+.dROqMf {
+  display: none;
+}
+.jsBJIl {
+  height: calc(100vh - 7px) !important;
+}
+.emFIyf {
+  display: none;
+}
+.FJeHV {
+  display: none;
 }
