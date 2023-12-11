@@ -26,7 +26,7 @@ async function getProjects() {
   const projects = await getDocs(projectsCol);
   const list = projects.docs.map((doc) => {
     return { ...doc.data(), id: doc.id };
-  });
+  }).sort((a, b) => a.name.localeCompare(b.name));
   return list;
 }
 function App() {
