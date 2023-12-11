@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/client": "^3.7.15",
+    "firebase": "^10.7.1",
     "graphql-playground-react": "^1.7.28",
     "react": "16.13.1",
     "react-dom": "^16.13.1",
+    "react-scripts": "5.0.1",
     "redux": "^4.0.5",
-    "web-vitals": "^2.1.4",
-    "react-scripts": "5.0.1"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "PORT=7000 react-scripts start",

@@ -1,66 +1,101 @@
+import { Playground, store } from "graphql-playground-react";
 import React, { useEffect, useState } from "react";
 import { Provider } from "react-redux";
-import { Playground, store } from "graphql-playground-react";
-
-const lsproject = "gqlp-project";
-const lsprojects = "gqlp-projects";
-
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore/lite";
+const firebaseConfig = {
+  apiKey: "AIzaSyA53ODWCzicLcd3tDeXHnjZA-hAY2cXZdg",
+  authDomain: "grapqhlist.firebaseapp.com",
+  projectId: "grapqhlist",
+  storageBucket: "grapqhlist.appspot.com",
+  messagingSenderId: "500518753639",
+  appId: "1:500518753639:web:06b31c36f1a9123d29cbc2",
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const collectionName = "projects";
+async function getProjects() {
+  const projectsCol = collection(db, collectionName);
+  const projects = await getDocs(projectsCol);
+  const list = projects.docs.map((doc) => {
+    return { ...doc.data(), id: doc.id };
+  });
+  return list;
+}
 function App() {
-  const ps = localStorage.getItem(lsprojects);
   const [project, setProject] = useState(undefined);
-  const [projects, setProjets] = useState(JSON.parse(ps) || []);
+  const [projects, setProjets] = useState([]);
   const [showForm, setShowform] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    url: "",
+    key: "",
     schema: "",
   });
 
   useEffect(() => {
-    const p = localStorage.getItem(lsproject);
-    if (p) {
-      setProject(JSON.parse(p));
-      const hh = setTimeout(() => {
-        document.getElementsByClassName('iRmVrA')?.[0]?.click();
-        return clearTimeout(hh);
-      }, 100)
-    }
+    const setList = async () => {
+      const list = await getProjects();
+      console.log(list);
+      setProjets(list);
+    };
+    setList();
   }, []);
 
+  useEffect(() => {
+    if (project) {
+      const hh = setTimeout(() => {
+        document.getElementsByClassName("iRmVrA")?.[0]?.click();
+        return clearTimeout(hh);
+      }, 100);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project]);
+
   const handleSetProject = (project) => {
-    localStorage.setItem(lsproject, JSON.stringify(project));
+    console.log(project);
     setProject(project);
-    const hh = setTimeout(() => {
-      document.getElementsByClassName('iRmVrA')?.[0]?.click();
-      return clearTimeout(hh);
-    }, 100)
   };
 
-  const handleSubmit = (evt) => {
+  const handleUpdateProject = (project) => {
+    setProject(undefined);
+    removeProject(project);
+    setFormData(project);
+    setShowform(true);
+  };
+
+  const handleSubmit = async (evt) => {
     evt.preventDefault();
     if (!formData.name) return;
-    if (!formData.endpoint) return;
-    localStorage.setItem(lsprojects, JSON.stringify([...projects, formData]));
-    setFormData(() => ({
-      name: "",
-      schema: "",
-    }));
+    if (!formData.url) return;
+    if (!formData.key) return;
+    if (!formData.schema) return;
+    if (formData.id) await deleteDoc(doc(db, collectionName, formData.id));
     setProjets([...projects, formData]);
     setShowform(() => false);
-    setProject(formData);
+    handleSetProject(formData);
+    await addDoc(collection(db, collectionName), {
+      ...formData,
+    });
+    setFormData(() => ({
+      name: "",
+      url: "",
+      key: "",
+      schema: "",
+    }));
   };
 
   const removeProject = (project) => {
+    deleteDoc(doc(db, collectionName, project.id));
     const updated = projects.filter((e) => e.name !== project.name);
-    localStorage.setItem(lsprojects, JSON.stringify(updated));
     setProjets(updated);
-  };
-
-  const getHeader = (str) => {
-    try {
-      return JSON.parse(str);
-    } catch (e) {
-      return {};
-    }
   };
 
   return project ? (
@@ -68,25 +103,42 @@ function App() {
       <div
         class="project-select"
         onClick={() => {
-          localStorage.removeItem(lsproject);
           setProject(undefined);
         }}
       >
         {project.name || "Projekt liste"}
       </div>
+
+      <div
+        class="project-update"
+        onClick={() => {
+          handleUpdateProject(project);
+        }}
+      >
+        Update
+      </div>
+
       <Provider store={store}>
         <Playground
-          endpoint={null}
+          endpoint={project.url}
+          endpointUrl={project.url}
           activeProjectName={project.name}
-          activeEnv={project.name}
-          schema={getHeader(project.endpoint).data}
+          fixedEndpoint={project.url}
+          activeEnv={{
+            "x-api-key": project.key,
+          }}
+          schema={JSON.parse(project.schema).data}
+          headers={{
+            "x-api-key": project.key,
+          }}
           settings={{
             "tracing.hideTracingResponse": false,
-            'tracing.tracingSupported': false,
-            'schema.polling.enable': false
+            "tracing.tracingSupported": false,
+            "schema.polling.enable": false,
+            "schema.enablePolling": false,
           }}
           injectedState={{
-            activeEnv: project.name
+            activeEnv: project.name,
           }}
           isElectron={true}
         />
@@ -108,16 +160,38 @@ function App() {
               }}
               value={formData.name}
             />
-            <label>Schema</label>
-            <textarea
+            <label>Url</label>
+            <input
               onChange={(evt) => {
                 const { value } = evt.target;
                 setFormData((s) => ({
                   ...s,
-                  endpoint: value,
+                  url: value,
                 }));
               }}
-              value={formData.endpoint}
+              value={formData.url}
+            />
+            <label>Key</label>
+            <input
+              onChange={(evt) => {
+                const { value } = evt.target;
+                setFormData((s) => ({
+                  ...s,
+                  key: value,
+                }));
+              }}
+              value={formData.key}
+            />
+            <label>Schema</label>
+            <input
+              onChange={(evt) => {
+                const { value } = evt.target;
+                setFormData((s) => ({
+                  ...s,
+                  schema: value,
+                }));
+              }}
+              value={formData.schema}
             />
             <button
               type="button"
@@ -135,11 +209,18 @@ function App() {
             {projects &&
               projects.map((e) => (
                 <div
+                  key={e.name}
                   class="project list-item"
                   onClick={() => handleSetProject(e)}
                 >
                   {e.name}
-                  <div class="remove" onClick={() => removeProject(e)}>
+                  <div
+                    class="remove"
+                    onClick={(evt) => {
+                      evt.stopPropagation();
+                      removeProject(e);
+                    }}
+                  >
                     -
                   </div>
                 </div>

@@ -22,6 +22,23 @@ body {
   transition: 0.3s;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
+.project-update {
+  background-color: #e68a00;
+  color: #fff;
+  text-transform: capitalize;
+  padding: 15px 30px;
+  position: fixed;
+  top: 0;
+  right: 160px;
+  font-weight: 500;
+  font-size: 14px;
+  z-index: 9000;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
 .project-select:hover {
   background-color: #cf7e04;
 }
